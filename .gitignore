@@ -1,0 +1,4 @@
+.ipynb*
+.tempfile*
+.workspace*
+id_rsa*
