@@ -51,13 +51,8 @@ class Station(Producer):
         try:
             self.producer.produce(
                 topic=self.topic_name,
-                key={"timestamp": self.time_millis()},
-                value={
-                    "train": f"{train.train_id}",
-                    "direction": direction,
-                    "prev_station_id": prev_station_id,
-                    "prev_direction": prev_direction
-                },
+                key=Station.key_schema,
+                value=Station.value_schema
             )
         except Exception as e:
             print(e)

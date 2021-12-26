@@ -47,12 +47,8 @@ class Turnstile(Producer):
         try:
             self.producer.produce(
                 topic=self.topic_name,
-                key={"timestamp": self.time_millis()},
-                value={
-                    "station_id": station_id,
-                    "station_name": station_name,
-                    "line": line
-                },
+                key=Turnstile.key_schema,
+                value=Turnstile.value_schema
             )
         except Exception as e:
             print(e)

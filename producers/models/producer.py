@@ -33,6 +33,7 @@ class Producer:
 
         self.broker_properties = {
             "bootstrap.servers": "PLAINTEXT://localhost:9092",
+            "schema.registry.url": "http://localhost:8081"
         }
 
         # If the topic does not already exist, try to create it
@@ -40,8 +41,8 @@ class Producer:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        self.schema_registry = CachedSchemaRegistryClient({"url": "http://localhost:8081"})
-        self.producer = AvroProducer(self.broker_properties, schema_registry=self.schema_registry)
+        #self.schema_registry = CachedSchemaRegistryClient({"url": "http://localhost:8081"})
+        self.producer = AvroProducer(self.broker_properties)
 
         
     def create_topic(self):
