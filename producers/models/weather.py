@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 import random
 import urllib.parse
+import time
 
 import requests
 
@@ -18,7 +19,9 @@ class Weather(Producer):
     """Defines a simulated weather model"""
 
     status = IntEnum(
-        "status", "sunny partly_cloudy cloudy windy precipitation", start=0
+        "status", 
+        "sunny partly_cloudy cloudy windy precipitation", 
+        start=0
     )
 
     rest_proxy_url = "http://localhost:8082"
@@ -48,11 +51,15 @@ class Weather(Producer):
 
         if Weather.key_schema is None:
             with open(f"{Path(__file__).parents[0]}/schemas/weather_key.json") as f:
-                Weather.key_schema = json.load(f)
+                Weather.key_schema = json.dumps(json.load(f))
 
         if Weather.value_schema is None:
             with open(f"{Path(__file__).parents[0]}/schemas/weather_value.json") as f:
-                Weather.value_schema = json.load(f)
+                Weather.value_schema = json.dumps(json.load(f))
+        
+        #print(json.dumps(Weather.value_schema))
+        #print(Weather.key_schema)
+        
 
     def _set_weather(self, month):
         """Returns the current weather"""
@@ -67,37 +74,40 @@ class Weather(Producer):
     def run(self, month):
         """Sends weather data to kafka topic via REST proxy"""
         self._set_weather(month)
-
+        
         try:
             resp = requests.post(
-                f"{Weather.rest_proxy_url}/{self.topic_name}",
-                headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
+                f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
+                headers={
+                    "Content-Type": "application/vnd.kafka.avro.v2+json",
+                    "Accept": "application/vnd.kafka.v2+json"},
                 data=json.dumps(
                     {
-                    # TODO: Provide key schema, value schema, and records
                     "value_schema": Weather.value_schema,
                     "key_schema": Weather.key_schema,
                     "records": [
                         {
-                            "value": self.temp
-                        },
-                        {
-                            "value": self.status
+                            "key": self.time_millis(),
+                            "value" : {
+                                "temperature": self.temp,
+                                "status": str(self.status)
+                            }
                         }
-                    ]    
+                    ]
                     }
-                ),
+                )
             )
             
             resp.raise_for_status()
             
             logger.debug(
-            "sent weather data to kafka, temp: %s, status: %s",
-            self.temp,
-            self.status.name,
+                "sent weather data to kafka, temp: %s, status: %s",
+                self.temp,
+                self.status.name,
             )
             
         except Exception as e:
             print(e)
             logger.info("weather kafka proxy integration incomplete - skipping")
+            raise
             

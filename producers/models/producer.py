@@ -32,8 +32,7 @@ class Producer:
         self.num_replicas = num_replicas
 
         self.broker_properties = {
-            "bootstrap.servers": "PLAINTEXT://localhost:9092",
-            "schema.registry.url": "http://localhost:8081"
+            "bootstrap.servers": "PLAINTEXT://localhost:9092"
         }
 
         # If the topic does not already exist, try to create it
@@ -41,19 +40,30 @@ class Producer:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        #self.schema_registry = CachedSchemaRegistryClient({"url": "http://localhost:8081"})
-        self.producer = AvroProducer(self.broker_properties)
+        self.schema_registry = CachedSchemaRegistryClient({"url": "http://localhost:8081"})
+        self.producer = AvroProducer(self.broker_properties, schema_registry=self.schema_registry)
 
         
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
         ac = AdminClient(self.broker_properties)
         futures = ac.create_topics(
-            [NewTopic(topic=self.topic_name, num_partitions=self.num_partitions, replication_factor=self.num_replicas)]
+            [
+                NewTopic(topic=self.topic_name, 
+                      num_partitions=self.num_partitions, 
+                      replication_factor=self.num_replicas,
+                      #config={
+                      #    "cleanup.policy": "delete",
+                      #    "delete.retention.ms": 2,
+                      #    "file.delete.delay.ms": 2
+                      #}
+                        )
+            ]
         )
-        for _, future in futures.items():
+        for topic, future in futures.items():
             try:
                 future.result()
+                print("Topic Created")
             except Exception as e:
                 print("Exiting loop")
                 logger.info("topic creation kafka integration incomplete - skipping")
@@ -63,7 +73,6 @@ class Producer:
         """Prepares the producer for exit by cleaning up the producer"""
         try:
             self.producer.flush()
-            self.producer.close()
         except Exception as e:
             print(f"{e}")
             logger.info("producer close incomplete - skipping")

@@ -1,6 +1,5 @@
 """Defines trends calculations for stations"""
 import logging
-
 import faust
 
 
@@ -26,23 +25,23 @@ class TransformedStation(faust.Record):
     station_id: int
     station_name: str
     order: int
-    line: str
+    line: str = ""
 
 
 # TODO: Define a Faust Stream that ingests data from the Kafka Connect stations topic and
 #   places it into a new topic with only the necessary information.
 app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memory://")
 # TODO: Define the input Kafka Topic. Hint: What topic did Kafka Connect output to?
-# topic = app.topic("TODO", value_type=Station)
+topic = app.topic("com.udacity.stations", value_type=Station)
 # TODO: Define the output Kafka Topic
-# out_topic = app.topic("TODO", partitions=1)
+out_topic = app.topic("com.udacity.transformed_station", partitions=1, value_type=TransformedStation)
 # TODO: Define a Faust Table
-#table = app.Table(
-#    # "TODO",
-#    # default=TODO,
-#    partitions=1,
-#    changelog_topic=out_topic,
-#)
+table = app.Table(
+    "stations_tbl",
+    default=str,
+    partitions=1,
+    changelog_topic=out_topic,
+)
 
 
 #
@@ -53,6 +52,32 @@ app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memor
 #
 #
 
+def get_line_type(station):
+    if station.red:
+        station.line = "red"
+    elif station.blue:
+        station.line = "blue"
+    elif station.green:
+        station.line = "green"
+    return station
+    
+
+@app.agent(topic)
+async def station(stations):
+    
+    stations.add_processor(get_line_type)
+    
+    async for station in stations:
+        await out_topic.send(key=station.station_id, 
+                             value=TransformedStation(station_id=station.station_id, 
+                                                      station_name=station.station_name, 
+                                                      order=station.order))
+"""        
+@app.agent(out_topic)
+async def transformed_station(transformed_stations):
+    
+    async for transformed_station in transformed_stations.group_by():
+"""     
 
 if __name__ == "__main__":
     app.main()

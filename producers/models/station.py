@@ -28,7 +28,7 @@ class Station(Producer):
             .replace("'", "")
         )
 
-        topic_name = f"com.udacity.stations.{station_name}"
+        topic_name = f"com.udacity.stations"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
@@ -51,12 +51,13 @@ class Station(Producer):
         try:
             self.producer.produce(
                 topic=self.topic_name,
-                key=Station.key_schema,
-                value=Station.value_schema
+                key_schema=Station.key_schema,
+                value_schema=Station.value_schema
             )
         except Exception as e:
             print(e)
             logger.info("arrival kafka integration incomplete - skipping")
+            raise
 
     def __str__(self):
         return "Station | {:^5} | {:<30} | Direction A: | {:^5} | departing to {:<30} | Direction B: | {:^5} | departing to {:<30} | ".format(

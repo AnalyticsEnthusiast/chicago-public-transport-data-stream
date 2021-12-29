@@ -2,3 +2,4 @@
 .tempfile*
 .workspace*
 id_rsa*
+__pycache__*

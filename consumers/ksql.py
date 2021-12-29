@@ -23,14 +23,25 @@ KSQL_URL = "http://localhost:8088"
 
 KSQL_STATEMENT = """
 CREATE TABLE turnstile (
-    ???
+    station_id varchar,
+    station_name varchar,
+    line varchar
 ) WITH (
-    ???
+    KAFKA_TOPIC='com.udacity.turnstyles',
+    VALUE_FORMAT='AVRO',
+    KEY='station_id'
 );
 
 CREATE TABLE turnstile_summary
-WITH (???) AS
-    ???
+WITH (
+    VALUE_FORMAT='JSON'
+) AS
+    SELECT 
+        station_id,
+        count(station_id) as count
+    FROM turnstyle
+    GROUP BY station_id
+    ;
 """
 
 

@@ -5,7 +5,7 @@
   "fields": [
     {
       "name": "temperature",
-      "type": "float"
+      "type": "long"
     },
     {
         "name": "status",
