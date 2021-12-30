@@ -10,7 +10,6 @@ import time
 import requests
 
 from models.producer import Producer
-#from producer import Producer
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ class Weather(Producer):
     def __init__(self, month):
         
         super().__init__(
-            "com.udacity.events.weather",
+            "org.chicago.cta.weather.v1",
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
             num_partitions=10,
@@ -80,7 +79,8 @@ class Weather(Producer):
                 f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
                 headers={
                     "Content-Type": "application/vnd.kafka.avro.v2+json",
-                    "Accept": "application/vnd.kafka.v2+json"},
+                    "Accept": "application/vnd.kafka.v2+json"
+                },
                 data=json.dumps(
                     {
                     "value_schema": Weather.value_schema,

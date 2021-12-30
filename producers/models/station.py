@@ -28,7 +28,7 @@ class Station(Producer):
             .replace("'", "")
         )
 
-        topic_name = f"com.udacity.arrivals"
+        topic_name = f"org.chicago.cta.station.arrivals"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
