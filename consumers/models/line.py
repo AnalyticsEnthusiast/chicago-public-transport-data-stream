@@ -63,9 +63,9 @@ class Line:
                 self._handle_station(value)
             except Exception as e:
                 logger.fatal("bad station? %s, %s", value, e)
-        elif message.topic == "com.udacity.turnstyles": # Set the conditional to the arrival topic
+        elif message.topic == "com.udacity.arrivals": # Set the conditional to the arrival topic
             self._handle_arrival(message)
-        elif message.topic == "turnstile_summary": # Set the conditional to the KSQL Turnstile Summary Topic
+        elif message.topic == "TURNSTILE_SUMMARY": # Set the conditional to the KSQL Turnstile Summary Topic
             json_data = json.loads(message.value())
             station_id = json_data.get("STATION_ID")
             station = self.stations.get(station_id)

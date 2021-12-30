@@ -22,7 +22,7 @@ KSQL_URL = "http://localhost:8088"
 #       Make sure to set the value format to JSON
 
 KSQL_STATEMENT = """
-CREATE TABLE turnstile (
+CREATE TABLE turnstyle (
     station_id varchar,
     station_name varchar,
     line varchar
@@ -32,11 +32,9 @@ CREATE TABLE turnstile (
     KEY='station_id'
 );
 
-CREATE TABLE turnstile_summary
-WITH (
-    VALUE_FORMAT='JSON'
-) AS
-    SELECT 
+CREATE TABLE turnstyle_summary 
+        AS 
+        SELECT 
         station_id,
         count(station_id) as count
     FROM turnstyle
@@ -47,25 +45,33 @@ WITH (
 
 def execute_statement():
     """Executes the KSQL statement against the KSQL API"""
-    if topic_check.topic_exists("TURNSTILE_SUMMARY") is True:
+    if topic_check.topic_exists("turnstyle_summary") is True:
         return
 
-    logging.debug("executing ksql statement...")
-
-    resp = requests.post(
-        f"{KSQL_URL}/ksql",
-        headers={"Content-Type": "application/vnd.ksql.v1+json"},
-        data=json.dumps(
-            {
-                "ksql": KSQL_STATEMENT,
-                "streamsProperties": {"ksql.streams.auto.offset.reset": "earliest"},
-            }
-        ),
-    )
-
-    # Ensure that a 2XX status code was returned
-    resp.raise_for_status()
-
+    try:
+        logging.debug("executing ksql statement...")
+        
+        resp = requests.post(
+            f"{KSQL_URL}/ksql",
+            headers={
+                "Content-Type": "application/vnd.ksql.v1+json",
+                "Accept": "application/vnd.ksql.v1+json"
+            },
+            data=json.dumps(
+                {
+                    "ksql": KSQL_STATEMENT,
+                    "streamsProperties": {"ksql.streams.auto.offset.reset": "earliest"},
+                }
+            )
+        )
+        return
+        print(resp)
+        # Ensure that a 2XX status code was returned
+        resp.raise_for_status()
+        
+    except Exception as e:
+        print(e)
+        raise
 
 if __name__ == "__main__":
     execute_statement()
