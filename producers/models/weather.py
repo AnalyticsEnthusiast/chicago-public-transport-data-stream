@@ -9,8 +9,8 @@ import time
 
 import requests
 
-from models.producer import Producer
-
+#from models.producer import Producer
+from producer import Producer
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +97,8 @@ class Weather(Producer):
                     }
                 )
             )
-            
+            return
+        
             resp.raise_for_status()
             
             logger.debug(

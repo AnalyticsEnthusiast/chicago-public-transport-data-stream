@@ -68,10 +68,10 @@ async def station(stations):
     stations.add_processor(get_line_type)
     
     async for station in stations:
-        await out_topic.send(key=station.station_id, 
-                             value=TransformedStation(station_id=station.station_id, 
-                                                      station_name=station.station_name, 
-                                                      order=station.order))
+        await out_topic.send(key=str(station.station_id), 
+                             value=TransformedStation(station_id=str(station.station_id), 
+                                                      station_name=str(station.station_name), 
+                                                      order=str(station.order)))
 """        
 @app.agent(out_topic)
 async def transformed_station(transformed_stations):
