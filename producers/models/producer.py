@@ -47,19 +47,17 @@ class Producer:
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
         ac = AdminClient(self.broker_properties)
+        
+        
         futures = ac.create_topics(
             [
                 NewTopic(topic=self.topic_name, 
                       num_partitions=self.num_partitions, 
-                      replication_factor=self.num_replicas,
-                      #config={
-                      #    "cleanup.policy": "delete",
-                      #    "delete.retention.ms": 2,
-                      #    "file.delete.delay.ms": 2
-                      #}
+                      replication_factor=self.num_replicas
                         )
             ]
         )
+        
         for topic, future in futures.items():
             try:
                 future.result()

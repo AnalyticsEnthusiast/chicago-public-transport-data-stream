@@ -57,7 +57,7 @@ class Weather(Producer):
                 Weather.value_schema = json.dumps(json.load(f))
         
         #print(json.dumps(Weather.value_schema))
-        #print(Weather.key_schema)
+        #print(json.dumps(Weather.key_schema))
         
 
     def _set_weather(self, month):
@@ -75,29 +75,36 @@ class Weather(Producer):
         self._set_weather(month)
         
         try:
+            
+            data = json.dumps(
+                    {
+                    "value_schema": Weather.value_schema,
+                    "key_schema": Weather.key_schema,
+                    "records": [
+                        {
+                            "key": { 
+                                "timestamp": self.time_millis()
+                            },
+                            "value" : {
+                                "temperature": self.temp,
+                                "status": str(self.status.name)
+                            }
+                        }
+                    ]
+                    }
+                )
+            print(data)
+            
+            
             resp = requests.post(
                 f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
                 headers={
                     "Content-Type": "application/vnd.kafka.avro.v2+json",
                     "Accept": "application/vnd.kafka.v2+json"
                 },
-                data=json.dumps(
-                    {
-                    "value_schema": Weather.value_schema,
-                    "key_schema": Weather.key_schema,
-                    "records": [
-                        {
-                            "key": self.time_millis(),
-                            "value" : {
-                                "temperature": self.temp,
-                                "status": str(self.status)
-                            }
-                        }
-                    ]
-                    }
-                )
+                data=data
             )
-            return
+            #return
         
             resp.raise_for_status()
             

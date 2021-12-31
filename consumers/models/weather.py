@@ -16,7 +16,7 @@ class Weather:
     def process_message(self, message):
         """Handles incoming weather data"""
         
-        if message.topic == "com.udacity.events.weather":
+        if message.topic == "org.chicago.cta.weather.v1":
             
             try:
                 
