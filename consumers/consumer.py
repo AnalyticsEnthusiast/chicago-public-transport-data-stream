@@ -32,12 +32,12 @@ class KafkaConsumer:
         
         self.broker_properties = {
             "bootstrap.servers": "PLAINTEXT://localhost:9092",
-            "group.id": 0
+            "group.id": 0,
+            "auto.offset.reset" = "earliest" if self.offset_earliest else "latest"
         }
 
         if is_avro is True:
             self.broker_properties["schema.registry.url"] = "http://localhost:8081"
-            self.broker_properties["auto.offset.reset"] = "earliest" if self.offset_earliest else "latest"
             self.consumer = AvroConsumer(self.broker_properties)
         else:
             self.consumer = Consumer(self.broker_properties)
