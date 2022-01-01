@@ -37,7 +37,7 @@ class KafkaConsumer:
 
         if is_avro is True:
             self.broker_properties["schema.registry.url"] = "http://localhost:8081"
-            self.broker_properties["auto.offset.reset"] = "earliest" if offset_earliest else "latest"
+            self.broker_properties["auto.offset.reset"] = "earliest" if self.offset_earliest else "latest"
             self.consumer = AvroConsumer(self.broker_properties)
         else:
             self.consumer = Consumer(self.broker_properties)
