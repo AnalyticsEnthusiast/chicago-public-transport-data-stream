@@ -37,7 +37,7 @@ class Weather(Producer):
             "org.chicago.cta.weather.v1",
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
-            num_partitions=10,
+            num_partitions=1,
             num_replicas=3,
         )
 
@@ -99,12 +99,11 @@ class Weather(Producer):
             resp = requests.post(
                 f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
                 headers={
-                    "Content-Type": "application/vnd.kafka.avro.v2+json",
-                    "Accept": "application/vnd.kafka.v2+json"
+                    "Content-Type": "application/vnd.kafka.avro.v2+json"
                 },
                 data=data
             )
-            #return
+            return
         
             resp.raise_for_status()
             

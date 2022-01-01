@@ -37,6 +37,7 @@ class KafkaConsumer:
 
         if is_avro is True:
             self.broker_properties["schema.registry.url"] = "http://localhost:8081"
+            self.broker_properties["auto.offset.reset"] = "earliest"
             self.consumer = AvroConsumer(self.broker_properties)
         else:
             self.consumer = Consumer(self.broker_properties)
@@ -72,24 +73,22 @@ class KafkaConsumer:
     def _consume(self):
         """Polls for a message. Returns 1 if a message was received, 0 otherwise"""
 
-        while True:
-            message = self.consumer.poll(1.0)
-            if message is None:
-                print("no message received by consumer")
-                return 0
-            elif message.error() is not None:
-                print(f"error from consumer {message.error()}")
-                return 0
-            else:
-                print(f"consumed message {message.key()}: {message.value()}")
-                return 1
+        message = self.consumer.poll(1.0)
+        if message is None:
+            print("no message received by consumer")
+            return 0
+        elif message.error() is not None:
+            print(f"error from consumer {message.error()}")
+            return 0
+        else:
+            print(f"consumed message {message.key()}: {message.value()}")
+            return 1
 
 
     def close(self):
         """Cleans up any open kafka consumers"""
         
         try:
-            self.consumer.flush()
             self.consumer.close()
         except Exception as e:
             print(e)

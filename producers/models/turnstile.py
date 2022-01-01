@@ -46,20 +46,21 @@ class Turnstile(Producer):
         num_entries = self.turnstile_hardware.get_entries(timestamp, time_step)
         
         try:
-            self.producer.produce(
-                topic=self.topic_name,
-                key_schema=Turnstile.key_schema,
-                value_schema=Turnstile.value_schema,
-                key={
-                    "timestamp": self.time_millis()
-                },
-                value={
-                    "station_id": str(self.station.station_id),
-                    "station_name": str(self.station.name),
-                    "line": str(self.station.color)
-                }
-            )
+            for i in range(num_entries):
+                self.producer.produce(
+                    topic=self.topic_name,
+                    key_schema=Turnstile.key_schema,
+                    value_schema=Turnstile.value_schema,
+                    key={
+                        "timestamp": self.time_millis()
+                    },
+                    value={
+                        "station_id": str(self.station.station_id),
+                        "station_name": str(self.station.name),
+                        "line": str(self.station.color)
+                    }
+                )
             
         except Exception as e:
             print(e)
-            logger.info("turnstile kafka integration incomplete - skipping")
+            logger.info("turnstile kafka producer issue - skipping")

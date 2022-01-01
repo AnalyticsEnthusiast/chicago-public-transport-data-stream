@@ -41,7 +41,10 @@ class Producer:
             Producer.existing_topics.add(self.topic_name)
 
         self.schema_registry = CachedSchemaRegistryClient({"url": "http://localhost:8081"})
-        self.producer = AvroProducer(self.broker_properties, schema_registry=self.schema_registry)
+        self.producer = AvroProducer(self.broker_properties, 
+                                     schema_registry=self.schema_registry, 
+                                     default_key_schema=key_schema, 
+                                     default_value_schema=value_schema)
 
         
     def create_topic(self):
@@ -53,7 +56,13 @@ class Producer:
             [
                 NewTopic(topic=self.topic_name, 
                       num_partitions=self.num_partitions, 
-                      replication_factor=self.num_replicas
+                      replication_factor=self.num_replicas,
+                         config={
+                        "cleanup.policy": "compact",
+                         "compression.type": "gzip",
+                         "delete.retention.ms": 2000,
+                         "file.delete.delay.ms": 2000,
+                         }
                         )
             ]
         )

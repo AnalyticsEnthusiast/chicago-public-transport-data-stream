@@ -25,7 +25,7 @@ class TransformedStation(faust.Record):
     station_id: int
     station_name: str
     order: int
-    line: str = ""
+    line: str
 
 
 # TODO: Define a Faust Stream that ingests data from the Kafka Connect stations topic and
@@ -37,48 +37,56 @@ topic = app.topic("org.chicago.cta.stations", value_type=Station)
 out_topic = app.topic("org.chicago.cta.transformed_station", partitions=1, value_type=TransformedStation)
 # TODO: Define a Faust Table
 table = app.Table(
-    "stations_tbl",
-    default=str,
+    "org.chicago.cta.transformed_station",
+    default=TransformedStation,
     partitions=1,
     changelog_topic=out_topic,
 )
 
-
-#
-#
-# TODO: Using Faust, transform input `Station` records into `TransformedStation` records. Note that
-# "line" is the color of the station. So if the `Station` record has the field `red` set to true,
-# then you would set the `line` of the `TransformedStation` record to the string `"red"`
-#
-#
-
+"""
 def get_line_type(station):
+    line=""
     if station.red:
-        station.line = "red"
+        line = "red"
     elif station.blue:
-        station.line = "blue"
+        line = "blue"
     elif station.green:
-        station.line = "green"
-    return station
-    
+        line = "green"
+    return TransformedStation(station_id=str(station.station_id), 
+                              station_name=str(station.station_name), 
+                              order=str(station.order),
+                              line=line)
+"""
 
 @app.agent(topic)
 async def station(stations):
     
-    stations.add_processor(get_line_type)
-    
-    async for s in stations:
-        await out_topic.send(key=str(s.station_id), 
-                             value=TransformedStation(station_id=str(s.station_id), 
-                                                      station_name=str(s.station_name), 
-                                                      order=str(s.order),
-                                                      line=str(s.line)))
-"""        
+    async for station in stations:
+        line=""
+        if station.red:
+            line = "red"
+        elif station.blue:
+            line = "blue"
+        elif station.green:
+            line = "green"
+            
+        transformed_station = TransformedStation(station_id=str(station.station_id), 
+                                                 station_name=str(station.station_name), 
+                                                 order=str(station.order),
+                                                 line=line)
+        
+        table[station.station_id] = transformed_station
+
+"""
+#await out_topic.send(key=str(s.station_id),
+        #                     value=s)
 @app.agent(out_topic)
 async def transformed_station(transformed_stations):
     
-    async for transformed_station in transformed_stations.group_by():
-"""     
+    async for transformed_station in transformed_stations.group_by(TransformedStation.station_id):
+        table[transformed_stations.station_id] = transformed_station
+"""
+
 
 if __name__ == "__main__":
     app.main()

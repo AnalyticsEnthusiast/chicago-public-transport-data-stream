@@ -25,7 +25,9 @@ CREATE TABLE turnstyle (
 );
 
 CREATE TABLE turnstyle_summary 
-        AS 
+WITH (
+        VALUE_FORMAT='JSON'
+    ) AS 
         SELECT 
         station_id,
         count(station_id) as count
