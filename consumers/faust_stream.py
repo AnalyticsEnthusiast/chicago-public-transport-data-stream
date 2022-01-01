@@ -62,13 +62,7 @@ def get_line_type(station):
 async def station(stations):
     
     async for station in stations:
-        line=""
-        if station.red:
-            line = "red"
-        elif station.blue:
-            line = "blue"
-        elif station.green:
-            line = "green"
+        line = "red" if station.red else "blue" if station.blue else "green" if station.green else ""
             
         transformed_station = TransformedStation(station_id=str(station.station_id), 
                                                  station_name=str(station.station_name), 
